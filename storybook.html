@@ -373,10 +373,12 @@
 
   .fineprint { font-size: clamp(10px, 2.8vw, 12px); color: var(--muted); line-height: 1.7; margin-top: 12px; }
 
-  /* i18n: inactive language is hidden */
+  /* i18n: inactive language is hidden (kept active — English-only mode needs this to hide ZH spans) */
   [lang="zh"] { display: none; }
+  /* i18n: language-switch rules — DISABLED to lock English. To re-enable i18n, uncomment.
   html.zh [lang="zh"] { display: inline; }
   html.zh [lang="en"] { display: none; }
+  */
 
   /* confetti */
   .burst {
@@ -389,6 +391,8 @@
   }
 </style>
 <script>
+  /* i18n: DISABLED — locked to English. Original detection block preserved below.
+     To re-enable: delete the two const lines after this comment, then uncomment the original block.
   const LANGZH = (() => {
     const q = new URLSearchParams(location.search).get('lang');
     if (q === 'zh') return true;
@@ -401,6 +405,9 @@
     document.title = '云海故事集 🌙';
   }
   const T = (en, zh) => LANGZH ? zh : en;
+  */
+  const LANGZH = false;
+  const T = (en, zh) => en;
 </script>
 </head>
 <body>
@@ -1149,8 +1156,8 @@
     }
   })();
 
-  /* i18n: swap plain-text elements to Chinese before anything reads/stores their labels */
-  if (LANGZH) document.querySelectorAll('[data-zh]').forEach(el => { el.textContent = el.dataset.zh; });
+  /* i18n: swap plain-text elements to Chinese — DISABLED (English only). To re-enable, uncomment the line below. */
+  // if (LANGZH) document.querySelectorAll('[data-zh]').forEach(el => { el.textContent = el.dataset.zh; });
 
   const S = { glasses: 'star-shaped glasses 🌟' };
   let read = [];
