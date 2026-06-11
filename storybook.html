@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>The Cloud Sea Collection 🌙</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --night1: #232c5c;
+    --night2: #3a3f7d;
+    --paper: #fff9ec;
+    --paper-line: #e8d9b0;
+    --gold: #e8b64c;
+    --gold-deep: #c89232;
+    --gold-shadow: #9e7222;
+    --ink: #4a3f2e;
+    --muted: #9c8c6e;
+    --blue: #5b79c7;
+    --mint: #4db6a0;
+    --rose: #d4708e;
+  }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: "Comic Sans MS", "Comic Neue", "Segoe UI", cursive, sans-serif;
+    background: linear-gradient(170deg, var(--night1) 0%, var(--night2) 55%, #4d549b 100%);
+    color: var(--ink);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+
+  /* ---------- night sky ---------- */
+  .floaties { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .floaty { position: absolute; bottom: -10vh; opacity: 0; animation: floatUp linear infinite; }
+  @keyframes floatUp {
+    0%   { transform: translateY(0) rotate(-10deg) scale(.9); opacity: 0; }
+    10%  { opacity: .7; }
+    90%  { opacity: .4; }
+    100% { transform: translateY(-115vh) rotate(12deg) scale(1.1); opacity: 0; }
+  }
+  .moon {
+    position: fixed; top: 22px; right: 26px;
+    font-size: clamp(34px, 8vw, 52px);
+    z-index: 0;
+    filter: drop-shadow(0 0 18px rgba(255, 236, 160, .55));
+    animation: moonbob 5s ease-in-out infinite;
+  }
+  @keyframes moonbob {
+    0%, 100% { transform: translateY(0) rotate(-6deg); }
+    50%      { transform: translateY(-7px) rotate(4deg); }
+  }
+
+  /* ---------- pages ---------- */
+  .page {
+    position: fixed; inset: 0; z-index: 1;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 18px 12px;
+    text-align: center;
+  }
+  .page.active { display: flex; animation: pop .45s cubic-bezier(.2,1.4,.4,1); }
+  @keyframes pop {
+    from { opacity: 0; transform: scale(.93) translateY(16px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .book {
+    background: var(--paper);
+    border: 3px solid var(--paper-line);
+    border-radius: 22px;
+    box-shadow: 0 18px 44px rgba(10, 14, 40, .45), inset 0 0 0 6px #fffdf6;
+    padding: 24px 22px 26px;
+    width: min(500px, 95vw);
+    max-height: 92vh;
+    overflow-y: auto;
+    position: relative;
+  }
+  .book::before {
+    content: "";
+    position: absolute; left: 12px; top: 14px; bottom: 14px;
+    width: 2px;
+    background: repeating-linear-gradient(180deg, var(--paper-line) 0 8px, transparent 8px 16px);
+  }
+
+  .chapter { font-size: clamp(10px, 2.8vw, 12px); letter-spacing: 2.5px; color: var(--gold-deep); font-weight: bold; margin-bottom: 10px; }
+  h1 { font-size: clamp(19px, 5vw, 26px); line-height: 1.35; margin-bottom: 10px; }
+  .story { font-size: clamp(14px, 3.9vw, 16.5px); line-height: 1.7; text-align: left; margin-bottom: 16px; }
+  .story em { color: var(--blue); font-style: normal; font-weight: bold; }
+  .story .cap { color: var(--gold-deep); font-weight: bold; }
+  .story .whis { color: var(--muted); font-style: italic; }
+
+  .scene { font-size: clamp(44px, 12vw, 66px); display: block; margin: 4px 0 10px; animation: bob 3.4s ease-in-out infinite; }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50%      { transform: translateY(-8px) rotate(2deg); }
+  }
+
+  /* ---------- buttons ---------- */
+  .btn {
+    font-family: inherit;
+    font-size: clamp(15px, 4vw, 18px);
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(180deg, #f2c668, var(--gold-deep));
+    border: none;
+    border-radius: 999px;
+    padding: 12px 32px;
+    cursor: pointer;
+    box-shadow: 0 5px 0 var(--gold-shadow), 0 10px 20px rgba(10, 14, 40, .25);
+    transition: transform .12s, box-shadow .12s;
+  }
+  .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--gold-shadow), 0 5px 10px rgba(10, 14, 40, .2); }
+  .btn:disabled { background: #cfc4a8; box-shadow: 0 5px 0 #a89c7f; cursor: not-allowed; }
+
+  .hint { font-size: clamp(11px, 3vw, 13px); color: var(--muted); margin-top: 11px; min-height: 1.4em; line-height: 1.5; }
+
+  /* ---------- interactions ---------- */
+  .opts { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .opt {
+    font-family: inherit;
+    font-size: clamp(13.5px, 3.7vw, 16px);
+    text-align: left;
+    color: var(--ink);
+    background: #fff;
+    border: 2.5px solid var(--paper-line);
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(10,14,40,.1);
+    padding: 12px 15px;
+    cursor: pointer;
+    transition: transform .15s, border-color .15s, background .15s;
+  }
+  .opt:hover { transform: translateY(-2px); border-color: var(--gold); }
+  .opt.picked { border-color: var(--gold); background: #fff6dd; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 12px; }
+  .chip {
+    font-family: inherit;
+    font-size: clamp(13px, 3.6vw, 15.5px);
+    background: #fff;
+    border: 2.5px solid var(--paper-line);
+    border-radius: 14px;
+    padding: 11px 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(10,14,40,.1);
+    transition: transform .15s, border-color .15s, background .15s;
+  }
+  .chip:hover { transform: translateY(-2px); }
+  .chip.done { border-color: var(--mint); background: #eafaf5; }
+
+  .saybox {
+    background: #fff;
+    border: 2px dashed var(--paper-line);
+    border-radius: 14px;
+    padding: 11px 14px;
+    font-size: clamp(13px, 3.6vw, 15.5px);
+    line-height: 1.6;
+    color: var(--ink);
+    min-height: 3.2em;
+    margin-bottom: 14px;
+    text-align: left;
+  }
+
+  .holdbtn {
+    font-family: inherit;
+    font-size: clamp(15px, 4vw, 18px);
+    font-weight: bold;
+    color: var(--gold-deep);
+    background: #fff;
+    border: 3px solid var(--gold);
+    border-radius: 999px;
+    padding: 13px 30px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .holdbtn .fillbar {
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, #ffe9b8, #ffd877);
+    width: 0%;
+    z-index: 0;
+    transition: width .1s linear;
+  }
+  .holdbtn span { position: relative; z-index: 1; }
+
+  /* ---------- play areas ---------- */
+  .arena {
+    position: relative;
+    width: 100%;
+    height: clamp(230px, 36vh, 320px);
+    background: linear-gradient(180deg, #2b3568, #46518f);
+    border-radius: 16px;
+    border: 3px solid var(--paper-line);
+    overflow: hidden;
+    margin-bottom: 12px;
+    touch-action: none;
+  }
+  .arena.day { background: linear-gradient(180deg, #7fa8e0, #b8d4f0); }
+  .score { font-size: clamp(13.5px, 3.8vw, 16px); font-weight: bold; color: var(--gold-deep); margin-bottom: 8px; }
+
+  .sprite { position: absolute; line-height: 1; cursor: pointer; }
+  .pop { animation: spritePop .35s ease-out forwards !important; pointer-events: none; }
+  @keyframes spritePop {
+    50%  { transform: scale(1.6); opacity: 1; }
+    100% { transform: scale(0); opacity: 0; }
+  }
+
+  /* toast meter */
+  .meter { height: 18px; background: #e9e0c8; border-radius: 999px; overflow: hidden; position: relative; margin-bottom: 10px; }
+  .meter .zone { position: absolute; left: 55%; width: 30%; top: 0; bottom: 0; background: rgba(232, 182, 76, .45); }
+  .meter .needle { height: 100%; width: 0%; background: linear-gradient(90deg, #fff, #e8a44c, #8a4a1f); border-radius: 999px; transition: width .08s linear; }
+
+  /* simon shells */
+  .shellgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0 auto 12px; width: min(290px, 80vw); }
+  .shell {
+    font-size: clamp(38px, 10vw, 52px);
+    background: #fff;
+    border: 3px solid var(--paper-line);
+    border-radius: 18px;
+    padding: 14px 0;
+    cursor: pointer;
+    transition: transform .1s, background .15s, border-color .15s;
+  }
+  .shell.flash { background: #fff1c4; border-color: var(--gold); transform: scale(1.08); box-shadow: 0 0 22px rgba(232,182,76,.65); }
+  .turnbanner {
+    font-size: clamp(14px, 4vw, 17px);
+    font-weight: bold;
+    border-radius: 12px;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+  }
+  .turnbanner.cap { background: #fff1c4; color: var(--gold-deep); }
+  .turnbanner.mate { background: #e3f2ee; color: var(--mint); }
+
+  /* paint canvas */
+  #paintwrap { position: relative; width: 100%; margin-bottom: 12px; }
+  #paintCanvas { width: 100%; height: clamp(220px, 34vh, 300px); display: block; border-radius: 16px; border: 3px solid var(--paper-line); touch-action: none; cursor: crosshair; }
+
+  /* mail boxes */
+  .mailrow { display: flex; gap: 10px; justify-content: center; margin-bottom: 12px; }
+  .mailbox {
+    font-family: inherit;
+    flex: 1;
+    max-width: 120px;
+    font-size: clamp(26px, 8vw, 38px);
+    background: #fff;
+    border: 3px solid var(--paper-line);
+    border-radius: 16px;
+    padding: 12px 0 6px;
+    cursor: pointer;
+    transition: transform .12s, border-color .15s;
+  }
+  .mailbox small { display: block; font-size: clamp(10px, 2.8vw, 12px); color: var(--muted); margin-top: 2px; }
+  .mailbox:active { transform: scale(.95); }
+  .letterview {
+    font-size: clamp(40px, 11vw, 58px);
+    background: #fff;
+    border: 3px dashed var(--gold);
+    border-radius: 18px;
+    width: min(160px, 44vw);
+    margin: 0 auto 12px;
+    padding: 16px 0;
+  }
+
+  /* rowing */
+  .rowarena { display: flex; gap: 10px; margin-bottom: 12px; }
+  .oarbtn {
+    flex: 1;
+    font-family: inherit;
+    font-size: clamp(15px, 4.2vw, 19px);
+    font-weight: bold;
+    border: none;
+    border-radius: 18px;
+    padding: 26px 8px;
+    cursor: pointer;
+    color: #fff;
+    transition: transform .07s;
+    touch-action: manipulation;
+  }
+  .oarbtn:active { transform: scale(.96); }
+  .oar-cap { background: linear-gradient(180deg, #f2c668, var(--gold-deep)); box-shadow: 0 5px 0 var(--gold-shadow); }
+  .oar-mate { background: linear-gradient(180deg, #6fcab5, #3d9c87); box-shadow: 0 5px 0 #28705f; }
+  .racetrack { margin-bottom: 10px; text-align: left; }
+  .racetrack .lane { font-size: clamp(12px, 3.3vw, 14px); color: var(--muted); margin-bottom: 3px; }
+  .lane-bar { height: 22px; background: #e9e0c8; border-radius: 999px; overflow: hidden; margin-bottom: 8px; position: relative; }
+  .lane-fill { height: 100%; width: 0%; border-radius: 999px; transition: width .2s; display: flex; align-items: center; justify-content: flex-end; font-size: 15px; }
+  .lane-us .lane-fill { background: linear-gradient(90deg, #ffe9b8, var(--gold)); }
+  .lane-rival .lane-fill { background: linear-gradient(90deg, #d8c8e8, #a98ec9); }
+
+  /* portrait */
+  .portrait-frame {
+    width: clamp(150px, 42vw, 210px);
+    margin: 6px auto 14px;
+    padding: 10px;
+    background: linear-gradient(140deg, #f6d287, var(--gold-deep), #f6d287);
+    border-radius: 14px;
+    box-shadow: 0 12px 28px rgba(10, 14, 40, .35);
+    transform: rotate(-1.5deg);
+  }
+  .portrait-frame img { width: 100%; display: block; border-radius: 8px; border: 3px solid #fff8e6; }
+  .portrait-frame .caption { font-size: clamp(10px, 2.8vw, 12px); color: #fff8e6; padding-top: 7px; font-style: italic; }
+
+  /* shelf */
+  .shelfgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-bottom: 6px; }
+  .bk {
+    font-family: inherit;
+    background: #fff;
+    border: 2.5px solid var(--paper-line);
+    border-radius: 16px;
+    padding: 13px 9px 11px;
+    cursor: pointer;
+    box-shadow: 0 5px 12px rgba(10,14,40,.12);
+    transition: transform .15s, border-color .15s;
+    position: relative;
+    text-align: center;
+  }
+  .bk:hover { transform: translateY(-3px); border-color: var(--gold); }
+  .bk .bk-ico { font-size: clamp(28px, 8vw, 38px); display: block; margin-bottom: 5px; }
+  .bk .bk-title { font-size: clamp(11.5px, 3.2vw, 13.5px); font-weight: bold; line-height: 1.35; display: block; }
+  .bk .stamp {
+    position: absolute; top: 6px; right: 7px;
+    font-size: clamp(9px, 2.5vw, 10.5px);
+    font-weight: bold;
+    color: var(--mint);
+    border: 2px solid var(--mint);
+    border-radius: 7px;
+    padding: 1px 6px;
+    transform: rotate(8deg);
+    background: rgba(255,255,255,.9);
+    display: none;
+  }
+  .bk.read .stamp { display: block; }
+  .bk.locked { opacity: .65; cursor: not-allowed; }
+  .bk.gold { grid-column: 1 / -1; background: linear-gradient(140deg, #fff6dd, #ffeebb); border-color: var(--gold); }
+
+  /* medals */
+  .medal {
+    background: #fff;
+    border: 2.5px solid var(--gold);
+    border-radius: 18px;
+    box-shadow: 0 6px 16px rgba(10,14,40,.12);
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    text-align: left;
+    display: flex; gap: 13px; align-items: center;
+  }
+  .medal .m-ico { font-size: clamp(32px, 8.5vw, 42px); flex-shrink: 0; }
+  .medal img.m-ico { width: clamp(44px, 11vw, 54px); height: clamp(44px, 11vw, 54px); border-radius: 50%; object-fit: cover; border: 2.5px solid var(--gold); }
+  .medal .m-title { font-weight: bold; font-size: clamp(14px, 3.8vw, 16.5px); color: var(--gold-deep); }
+  .medal .m-sub { font-size: clamp(12px, 3.3vw, 14px); color: var(--muted); line-height: 1.5; }
+
+  .fineprint { font-size: clamp(10px, 2.8vw, 12px); color: var(--muted); line-height: 1.7; margin-top: 12px; }
+
+  /* confetti */
+  .burst {
+    position: fixed; font-size: 26px; pointer-events: none; z-index: 99;
+    animation: burst 1.1s ease-out forwards;
+  }
+  @keyframes burst {
+    from { transform: translate(0,0) scale(.6) rotate(0); opacity: 1; }
+    to   { transform: translate(var(--dx), var(--dy)) scale(1.4) rotate(var(--rot)); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="floaties" id="floaties"></div>
+<div class="moon">🌙</div>
+
+<!-- ════════════════ SHELF ════════════════ -->
+<section class="page active" id="shelf">
+  <div class="book">
+    <div class="chapter">BEDTIME STORIES · ONE PER NIGHT (OR ALL AT ONCE, WE DON'T JUDGE)</div>
+    <h1>The Cloud Sea Collection ⛵</h1>
+    <div class="story" style="text-align:center;">
+      Seven tales of <span class="cap">Captain Ellen</span> &amp; <em>First Mate Erin</em> —<br>
+      the bravest crew of two on any sea, anywhere. 🌊
+    </div>
+    <div class="shelfgrid">
+      <button class="bk" data-bk="1" onclick="openStory(1)"><span class="stamp">READ ⭐</span><span class="bk-ico">🐉</span><span class="bk-title">The Dragon Who Lost His Glasses</span></button>
+      <button class="bk" data-bk="2" onclick="openStory(2)"><span class="stamp">READ ⭐</span><span class="bk-ico">🍰</span><span class="bk-title">The Island Made of Dessert</span></button>
+      <button class="bk" data-bk="3" onclick="openStory(3)"><span class="stamp">READ ⭐</span><span class="bk-ico">⛈️</span><span class="bk-title">The Giggle Storm</span></button>
+      <button class="bk" data-bk="4" onclick="openStory(4)"><span class="stamp">READ ⭐</span><span class="bk-ico">🐋</span><span class="bk-title">The Whale Who Forgot Her Song</span></button>
+      <button class="bk" data-bk="5" onclick="openStory(5)"><span class="stamp">READ ⭐</span><span class="bk-ico">☁️</span><span class="bk-title">The Hole in the Sky</span></button>
+      <button class="bk" data-bk="6" onclick="openStory(6)"><span class="stamp">READ ⭐</span><span class="bk-ico">🦉</span><span class="bk-title">The Star Post Office</span></button>
+      <button class="bk" data-bk="7" onclick="openStory(7)"><span class="stamp">READ ⭐</span><span class="bk-ico">🏁</span><span class="bk-title">The Great Cloud Sea Regatta</span></button>
+      <button class="bk gold" id="bkCer" onclick="openCeremony()"><span class="bk-ico">🏅</span><span class="bk-title" id="cerTitle">The Award Ceremony — read all 7 stories to unlock 🔒</span></button>
+    </div>
+    <div class="hint">Tap a book to begin. Stories remember being read. 📖</div>
+  </div>
+</section>
+
+<!-- ════════════════ STORY 1 · DRAGON ════════════════ -->
+<section class="page" id="s1p1"><div class="book">
+  <div class="chapter">STORY ONE · PAGE 1 OF 5</div>
+  <span class="scene">🐉🔥</span>
+  <div class="story">
+    One starry night, the good ship <em>Marshmallow</em> came upon an enormous dragon —
+    squinting terribly and toasting all the wrong things.
+    <br><br><b>Tap to see what he toasted by mistake:</b>
+  </div>
+  <div class="chips tapset" data-gate="g1a">
+    <button class="chip" data-say="A passing cloud — which turned into one giant marshmallow. (Honestly? An improvement.)">☁️ a cloud</button>
+    <button class="chip" data-say="A wave — now the world's largest crème brûlée. The fish were furious. And a little impressed.">🌊 a wave</button>
+    <button class="chip" data-say="He aimed at the moon once. Thankfully, the moon is out of range. The moon would like everyone to know it was never worried.">🌙 the moon</button>
+  </div>
+  <div class="saybox" data-sayfor="g1a">…</div>
+  <button class="btn gated" id="g1a" disabled onclick="goTo('s1p2')">Turn the page ➡️</button>
+</div></section>
+
+<section class="page" id="s1p2"><div class="book">
+  <div class="chapter">STORY ONE · PAGE 2 OF 5</div>
+  <span class="scene">⛵</span>
+  <div class="story">
+    A half-fried dragon is a delicate situation. <span class="cap">Captain Ellen</span> turned to her crew.
+    <span class="whis">"Options?"</span>
+    <br><br><b>How should they approach?</b>
+  </div>
+  <div class="opts choiceset" data-gate="g1b">
+    <button class="opt" data-say="They raised the marshmallow flag — the universal symbol of 'we come in snacks'. The dragon paused mid-toast.">Raise the white marshmallow flag 🏳️</button>
+    <button class="opt" data-say="Erin cupped her hands and yelled 'EXCUSE ME, MR. DRAGON!' — which works on dragons roughly 100% of the time. Nobody had ever tried being polite before.">Just say "excuse me!" very loudly 📢</button>
+    <button class="opt" data-say="Erin's seagull translator squawked a formal greeting. The dragon replied. The seagull blushed. We will never know what was said.">Send in Erin's seagull translator 🐦</button>
+  </div>
+  <div class="saybox" data-sayfor="g1b">…</div>
+  <button class="btn gated" id="g1b" disabled onclick="goTo('s1p3')">Turn the page ➡️</button>
+</div></section>
+
+<section class="page" id="s1p3"><div class="book">
+  <div class="chapter">STORY ONE · PAGE 3 OF 5</div>
+  <span class="scene">🐉💧</span>
+  <div class="story">
+    Up close, the dragon was less "fearsome beast" and more "very large person having a very bad week."
+    <br><br>
+    <span class="whis">"I lost my glasses,"</span> he sniffed, accidentally toasting a passing breeze.
+    <span class="whis">"Three weeks ago. I've been guessing ever since."</span>
+    <br><br>
+    <em>Erin</em> was already opening her art kit. <span class="whis">"I'll draw you new ones. What style?"</span>
+  </div>
+  <div class="opts choiceset" data-gate="g1c">
+    <button class="opt" data-set="glasses:round scholar glasses 🤓" data-say="'Distinguished,' nodded Erin, sketching furiously. 'Very professor-of-fire-breathing.'">Round scholar glasses 🤓</button>
+    <button class="opt" data-set="glasses:star-shaped glasses 🌟" data-say="'Star-shaped,' said Erin. 'Because you light up the sky anyway. Might as well match.'">Star-shaped glasses 🌟</button>
+    <button class="opt" data-set="glasses:heart-shaped glasses 💖" data-say="'Heart-shaped,' Erin declared. 'Nobody is scared of a dragon in heart-shaped glasses. That's the point.'">Heart-shaped glasses 💖</button>
+  </div>
+  <div class="saybox" data-sayfor="g1c">…</div>
+  <button class="btn gated" id="g1c" disabled onclick="prepS1p4()">Turn the page ➡️</button>
+</div></section>
+
+<section class="page" id="s1p4"><div class="book">
+  <div class="chapter">STORY ONE · PAGE 4 OF 5</div>
+  <span class="scene">🐉✨</span>
+  <div class="story" id="s1p4text"></div>
+  <button class="btn" onclick="goTo('s1p5'); startToast()">To the campfire ➡️</button>
+</div></section>
+
+<section class="page" id="s1p5"><div class="book">
+  <div class="chapter">STORY ONE · PAGE 5 OF 5 · THE PEACE TREATY</div>
+  <div class="story">
+    Every good treaty is signed over s'mores. The dragon supplied the fire —
+    <b>your job is the marshmallows.</b>
+    <br><span class="whis">Hold to toast. Release in the golden zone. Burnt ones go to the seagull (he insists).</span>
+  </div>
+  <div class="score" id="toastScore">Perfect marshmallows: 0 / 3</div>
+  <div class="meter"><div class="zone"></div><div class="needle" id="toastNeedle"></div></div>
+  <div style="font-size: clamp(40px, 11vw, 56px); margin-bottom: 10px;" id="toastMallow">🔥🍡</div>
+  <button class="holdbtn" id="toastBtn"><div class="fillbar"></div><span>HOLD TO TOAST 🔥</span></button>
+  <div class="hint" id="toastHint">Press and hold… release at just the right moment!</div>
+  <button class="btn gated" id="g1end" disabled style="margin-top:10px" onclick="finishStory(1)">The End — back to the shelf 📚</button>
+</div></section>
+
+<!-- ════════════════ STORY 2 · DESSERT ISLAND ════════════════ -->
+<section class="page" id="s2p1"><div class="book">
+  <div class="chapter">STORY TWO · PAGE 1 OF 5</div>
+  <span class="scene">🏝️🍰</span>
+  <div class="story">
+    <span class="whis">"Land ho!"</span> called <em>Erin</em> — then, after a long sniff: <span class="whis">"…Cake ho?"</span>
+    <br><br>
+    Dead ahead: an island with sponge-cake cliffs, a hot-chocolate lagoon, and fog that
+    smelled <i>suspiciously</i> sweet.
+    <br><br><b>Sniff the fog. What is that smell?</b>
+  </div>
+  <div class="chips tapset" data-gate="g2a">
+    <button class="chip" data-say="Whipped cream. Definitely whipped cream. The fog was 90% topping.">👃 sniff once</button>
+    <button class="chip" data-say="A second sniff revealed caramel undertones. Erin began taking notes for science.">👃👃 sniff twice</button>
+    <button class="chip" data-say="The third sniff was a mistake — now everyone was hungry. Even the anchor seemed hungry.">👃👃👃 keep sniffing</button>
+  </div>
+  <div class="saybox" data-sayfor="g2a">…</div>
+  <button class="btn gated" id="g2a" disabled onclick="goTo('s2p2')">Turn the page ➡️</button>
+</div></section>
+
+<section class="page" id="s2p2"><div class="book">
+  <div class="chapter">STORY TWO · PAGE 2 OF 5</div>
+  <span class="scene">🧭</span>
+  <div class="story">
+    The sugar-fog was thick as frosting. One wrong turn and a ship could be stuck in
+    meringue for <i>days</i>.
+    <br><br><b>Which way in, Captain?</b>
+  </div>
+  <div class="opts choiceset" data-gate="g2b">
+    <button class="opt" data-say="Ellen took the shortcut between two éclair reefs without even slowing down. The fog parted, frankly, out of respect.">The Captain's shortcut 💨</button>
+    <button class="opt" data-say="The scenic route: past the donut atolls, around the pudding shallows. Erin rated the view 'delicious'. The view WAS delicious.">The scenic route 🍩</button>
+    <button class="opt" data-say="'Follow the smell of brownies,' said Erin. Controversial. Effective. The nose knows.">Follow the brownie smell 🤤</button>
+  </div>
+  <div class="saybox" data-sayfor="g2b">…</div>
+  <button class="btn gated" id="g2b" disabled onclick="goTo('s2p3')">Turn the page ➡️</button>
+</div></section>
+
+<section class="page" id="s2p3"><div class="book">
+  <div class="chapter">STORY TWO · PAGE 3 OF 5</div>
+  <span class="scene">📜🖐️</span>
+  <div class="story">
+    Dessert islands have rules. Someone must be sworn in as <b>Chief Taste Officer</b> —
+    a sacred duty involving great responsibility and unlimited second helpings.
+    <br><br>
+    All eyes turned to <em>Erin</em>.
+    <br><br><b>Raise your hand and hold to take the oath:</b>
+    <br><span class="whis">"I solemnly swear to taste everything twice. For science. Three times if it's chocolate."</span>
+  </div>
+  <button class="holdbtn" id="oathBtn" data-time="2000" data-gate="g2c"><div class="fillbar"></div><span>🖐️ HOLD TO SWEAR THE OATH</span></button>
+  <div class="hint" id="oathHint"></div>
+  <button class="btn gated" id="g2c" disabled style="margin-top:10px" onclick="goTo('s2p4')">Turn the page ➡️</button>
+</div></section>
+
+<section class="page" id="s2p4"><div class="book">
+  <div class="chapter">STORY TWO · PAGE 4 OF 5</div>
+  <span class="scene">🔬😋</span>
+  <div class="story">
+    Chief Taste Officer Erin began her official survey.
+    <b>Tap each dessert for the official verdict:</b>
+  </div>
+  <div class="chips tapset" data-gate="g2d">
+    <button class="chip" data-say="🍰 Sponge-cake cliff: 'Scientifically fluffy. Approved for napping AND eating.'">🍰</button>
+    <button class="chip" data-say="🍫 Hot-chocolate lagoon: 'Perfect temperature. Would swim responsibly.' (She was not allowed to swim in it.)">🍫</button>
+    <button class="chip" data-say="🍪 Cookie boulders: 'Structurally crunchy. The chocolate chips are load-bearing.'">🍪</button>
+    <button class="chip" data-say="🧁 Cupcake bushes: 'Needs more sprinkles. Noted in the official report. Twice.'">🧁</button>
+    <button class="chip" data-say="🍓 Wild strawberries: 'Technically healthy. Still delicious. Nature is confusing.'">🍓</button>
+  </div>
+  <div class="saybox" data-sayfor="g2d">…</div>
+  <button class="btn gated" id="g2d" disabled onclick="goTo('s2p5'); startSweets()">Turn the page ➡️</button>
+</div></section>
+
+<section class="page" id="s2p5"><div class="book">
+  <div class="chapter">STORY TWO · PAGE 5 OF 5 · DESSERT RAIN</div>
+  <div class="story">
+    Then the island did what dessert islands do at sunset: <b>it rained dessert.</b>
+    Catch the sweets before they splash into the sea!
+    <br><span class="whis">⚠️ Watch out — the island also grows broccoli. Nobody knows why. Do NOT catch the broccoli.</span>
+  </div>
+  <div class="score" id="sweetScore">Sweets caught: 0 / 10</div>
+  <div class="arena day" id="sweetArena"></div>
+  <div class="hint" id="sweetHint">Tap the falling sweets! 🍩</div>
+  <button class="btn gated" id="g2end" disabled onclick="finishStory(2)">The End — back to the shelf 📚</button>
+</div></section>
+
+<!-- ════════════════ STORY 3 · GIGGLE STORM ════════════════ -->
+<section class="page" id="s3p1"><div class="book">
+  <div class="chapter">STORY THREE · PAGE 1 OF 5</div>
+  <span class="scene">⛈️😂</span>
+  <div class="story">
+    It rolled in from the west: a storm that didn't rain water. It rained <b>giggles</b>.
+    Anyone caught in it laughed until they couldn't steer.
+    <br><br><b>Tap the crew to hear what the storm did to them:</b>
+  </div>
+  <div class="chips tapset" data-gate="g3a">
+    <button class="chip" data-say="The bosun snort-laughed so hard he dropped his sandwich overboard. The sandwich was rescued. Priorities.">🧔 the bosun</button>
+    <button class="chip" data-say="The ship's cat — who had never laughed in nine lives — was discovered wheezing behind a barrel. She denies everything.">🐱 the ship's cat</button>
+    <button class="chip" data-say="Erin developed the rare 'silent laugh with occasional dolphin noise'. Doctors describe this condition as 'extremely contagious'.">👧 First Mate Erin</button>
+  </div>
+  <div class="saybox" data-sayfor="g3a">…</div>
+  <button class="btn gated" id="g3a" disabled onclick="goTo('s3p2')">Turn the page ➡️</button>
+</div></section>
+
+<section class="page" id="s3p2"><div class="book">
+  <div class="chapter">STORY THREE · PAGE 2 OF 5</div>
+  <span class="scene">📖</span>
+  <div class="story">
+    <span class="cap">Captain Ellen</span> checked the ship's log. It was… deteriorating.
+    <b>Tap to flip through the entries:</b>
+  </div>
+  <div class="chips tapset" data-gate="g3b">
+    <button class="chip" data-say="ENTRY 1, 21:03 — 'Storm approaching. Crew calm. Situation under control.' — E.">📄 Entry 1</button>
+    <button class="chip" data-say="ENTRY 2, 21:17 — 'Crew less calm. The word -barnacle- is apparently hilarious now. Investigating.' — E.">📄 Entry 2</button>
+    <button class="chip" data-say="ENTRY 3, 21:30 — 'hahahahaha barnacle hahaha ok ok focus. FOCUS. hahahaha oh no.' — E.">📄 Entry 3</button>
+  </div>
+  <div class="saybox" data-sayfor="g3b">…</div>
+  <button class="btn gated" id="g3b" disabled onclick="goTo('s3p3')">Turn the page ➡️</button>
+</div></section>
+
+<section class="page" id="s3p3"><div class="book">
+  <div class="chapter">STORY THREE · PAGE 3 OF 5</div>
+  <span class="scene">🗞️</span>
+  <div class="story">
+    Deep in the chart drawer, Erin found an ancient warning:
+    <br><br>
+    <span class="whis">"A giggle-storm cannot be fought. It can only be out-deadpanned.
+    One terrible joke, told with a perfectly straight face, and the storm will surrender out of respect."</span>
+    <br><br><b>Who has the straightest face on board?</b>
+  </div>
+  <div class="opts choiceset" data-gate="g3c">
+    <button class="opt" data-say="Erin tried. She got four words in and made the dolphin noise. Disqualified, with honors.">First Mate Erin 👧</button>
+    <button class="opt" data-say="The cat refused on principle. Cats don't do jokes. The cat IS the joke, allegedly — but nobody is brave enough to tell her.">The ship's cat 🐱</button>
+    <button class="opt" data-say="Captain Ellen. Obviously. The woman once kept a straight face through an entire parents' meeting. She was BUILT for this.">Captain Ellen 🫡</button>
+  </div>
+  <div class="saybox" data-sayfor="g3c">…</div>
+  <button class="btn gated" id="g3c" disabled onclick="goTo('s3p4')">Turn the page ➡️</button>
+</div></section>
+
+<section class="page" id="s3p4"><div class="book">
+  <div class="chapter">STORY THREE · PAGE 4 OF 5</div>
+  <span class="scene">🎤</span>
+  <div class="story">
+    The crew tied themselves to the mast (safety first). <span class="cap">Captain Ellen</span> stepped
+    to the bow and cleared her throat.
+    <br><br><b>Choose her weapon — the joke must be TRULY terrible:</b>
+  </div>
+  <div class="opts choiceset" data-gate="g3d">
+    <button class="opt" data-say="The storm paused. Somewhere, a thundercloud groaned. It was working.">"Why did the cloud bring an umbrella? It heard there was a 100% chance of itself." ☁️</button>
+    <button class="opt" data-say="A lightning bolt face-palmed. The rain began slowing out of sheer embarrassment.">"What do you call a fish with no eye? A fsh." 🐟</button>
+    <button class="opt" data-say="The sea physically recoiled. A wave tried to leave the ocean. Devastating. Perfect.">"The ocean waved at me. I sea-d it coming." 🌊</button>
+  </div>
+  <div class="saybox" data-sayfor="g3d">…</div>
+  <button class="btn gated" id="g3d" disabled onclick="goTo('s3p5'); startGiggles()">Tell it ➡️</button>
+</div></section>
+
+<section class="page" id="s3p5"><div class="book">
+  <div class="chapter">STORY THREE · PAGE 5 OF 5 · POP THE GIGGLES</div>
+  <div class="story">
+    The joke landed. The storm wobbled. Now finish it —
+    <b>pop the last giggle-bubbles before they regroup!</b>
+  </div>
+  <div class="score" id="gigScore">Giggles popped: 0 / 15</div>
+  <div class="arena" id="gigArena"></div>
+  <div class="hint" id="gigHint">Tap them fast — they don't stay long! 😂</div>
+  <button class="btn gated" id="g3end" disabled onclick="finishStory(3)">The End — back to the shelf 📚</button>
+</div></section>
+
+<!-- ════════════════ STORY 4 · WHALE (CO-OP) ════════════════ -->
+<section class="page" id="s4p1"><div class="book">
+  <div class="chapter">STORY FOUR · PAGE 1 OF 5</div>
+  <span class="scene">🌊</span>
+  <div class="story">
+    It was a quiet night — too quiet. Then, from below: a hum. Wobbly. Off-key. <i>Sad.</i>
+    <br><br><b>Tap the water to listen closer:</b>
+  </div>
+  <div class="chips tapset" data-gate="g4a">
+    <button class="chip" data-say="*glub* … the hum got louder. Whatever it was, it was BIG. And blue. And bad at humming.">👂 listen</button>
+    <button class="chip" data-say="A shape rose in the moonlight — a whale! She blushed (hard to see on a whale, but Erin swears it happened).">👂👂 listen closer</button>
+  </div>
+  <div class="saybox" data-sayfor="g4a">…</div>
+  <button class="btn gated" id="g4a" disabled onclick="goTo('s4p2')">Turn the page ➡️</button>
+</div></section>
+
+<section class="page" id="s4p2"><div class="book">
+  <div class="chapter">STORY FOUR · PAGE 2 OF 5</div>
+  <span class="scene">🐋💭</span>
+  <div class="story">
+    <span class="whis">"I've forgotten my song,"</span> rumbled the whale, embarrassed.
+    <span class="whis">"All whales get one. Mine just… slipped out of my head. Like a fish through fingers."</span>
+    <br><br><em>Erin</em> leaned over the rail. <b>"What do you remember about it?"</b>
+  </div>
+  <div class="opts choiceset" data-gate="g4b">
+    <button class="opt" data-say="'It went UP at the end,' said the whale. 'Like a question the moon always answered.'">It went up at the end 🌙</button>
+    <button class="opt" data-say="'My whole pod knew it,' she said softly. 'A hundred whales, one song. You could hear us from the lighthouse.'">Her whole pod sang it 🐋🐋</button>
+    <button class="opt" data-say="'A sailor hummed it back to me once,' she said. 'Years ago. Best duet of my life.'">A sailor once hummed along ⚓</button>
+  </div>
+  <div class="saybox" data-sayfor="g4b">…</div>
+  <button class="btn gated" id="g4b" disabled onclick="goTo('s4p3')">Turn the page ➡️</button>
+</div></section>
+
+<section class="page" id="s4p3"><div class="book">
+  <div class="chapter">STORY FOUR · PAGE 3 OF 5</div>
+  <span class="scene">🐚✨</span>
+  <div class="story">
+    <span class="whis">"Lost songs wash ashore as singing shells,"</span> said <span class="cap">Captain Ellen</span>,
+    already lowering the rowboat. <span class="whis">"Old sailor knowledge."</span>
+    <br><br>On the nearest sandbar, four shells glowed faintly.
+    <b>Tap each one to collect a piece of the song:</b>
+  </div>
+  <div class="chips tapset" data-gate="g4c">
+    <button class="chip" data-say="🐚 The first shell hummed a deep, warm note — like the sea clearing its throat.">🐚</button>
+    <button class="chip" data-say="🐚 The second was brighter — the part of the song that goes up, like a question.">🐚</button>
+    <button class="chip" data-say="🐚 The third giggled. Songs are allowed to giggle. Especially this one.">🐚</button>
+    <button class="chip" data-say="🐚 The fourth held the ending — soft and sure, like a goodnight.">🐚</button>
+  </div>
+  <div class="saybox" data-sayfor="g4c">…</div>
+  <button class="btn gated" id="g4c" disabled onclick="goTo('s4p4')">Turn the page ➡️</button>
+</div></section>
+
+<section class="page" id="s4p4"><div class="book">
+  <div class="chapter">STORY FOUR · PAGE 4 OF 5</div>
+  <span class="scene">🎼</span>
+  <div class="story">
+    But shells are shy. They only teach a song to <b>two voices taking turns</b> — that's the rule.
+    <br><br>
+    <span class="cap">The Captain</span> takes the odd rounds. <em>The First Mate</em> takes the even rounds.
+    The shells will glow in a pattern — <b>repeat it exactly, each on your own turn.</b>
+    <br><br><span class="whis">Yes, this means you both have to play. The whale is waiting. No pressure.</span>
+  </div>
+  <button class="btn" onclick="goTo('s4p5'); startEcho()">We're ready 🎶</button>
+</div></section>
+
+<section class="page" id="s4p5"><div class="book">
+  <div class="chapter">STORY FOUR · PAGE 5 OF 5 · THE ECHO SONG (TWO PLAYERS!)</div>
+  <div class="turnbanner cap" id="echoTurn">Watch the shells…</div>
+  <div class="shellgrid">
+    <button class="shell" data-shell="0">🐚</button>
+    <button class="shell" data-shell="1">🌟</button>
+    <button class="shell" data-shell="2">🫧</button>
+    <button class="shell" data-shell="3">🌙</button>
+  </div>
+  <div class="score" id="echoScore">Round 1 of 5</div>
+  <div class="hint" id="echoHint">The shells will glow in order — then repeat the pattern by tapping!</div>
+  <button class="btn gated" id="g4end" disabled onclick="finishStory(4)">The End — back to the shelf 📚</button>
+</div></section>
+
+<!-- ════════════════ STORY 5 · THE HOLE IN THE SKY (avatar) ════════════════ -->
+<section class="page" id="s5p1"><div class="book">
+  <div class="chapter">STORY FIVE · PAGE 1 OF 5</div>
+  <span class="scene">🕳️☁️</span>
+  <div class="story">
+    One morning the crew woke to something impossible: <b>a hole in the sky.</b>
+    A cloud-shaped gap of nothing, right where a cloud should be.
+    <br><br><b>Tap the hole. (Carefully.)</b>
+  </div>
+  <div class="chips tapset" data-gate="g5a">
+    <button class="chip" data-say="A flock of geese flew through it and came out deeply confused. One filed a complaint.">🪿 watch the geese</button>
+    <button class="chip" data-say="The sun kept shining through the gap at the wrong angle, like a picture missing from a wall.">☀️ squint at it</button>
+  </div>
+  <div class="saybox" data-sayfor="g5a">…</div>
+  <button class="btn gated" id="g5a" disabled onclick="goTo('s5p2')">Turn the page ➡️</button>
+</div></section>
+
+<section class="page" id="s5p2"><div class="book">
+  <div class="chapter">STORY FIVE · PAGE 2 OF 5</div>
+  <span class="scene">🗺️</span>
+  <div class="story">
+    The oldest sailors spoke of a <b>Cloud Painter</b> — a quiet traveler from a sea far,
+    far away, who paints the clouds into place while he dreams. No one had ever seen him awake.
+    His floating studio drifted somewhere past the lighthouse.
+    <br><br>They found it at dusk. <b>How should they knock?</b>
+  </div>
+  <div class="opts choiceset" data-gate="g5b">
+    <button class="opt" data-say="Three polite knocks. No answer — but the door drifted open on its own, like it had been expecting them.">Knock politely 🚪</button>
+    <button class="opt" data-say="Erin tried the secret-knock from her treehouse club. The door opened anyway. (All doors respect the treehouse knock.)">Erin's secret club knock 🤙</button>
+    <button class="opt" data-say="The seagull was sent to announce them. He cleared his throat — and the door simply opened, possibly to make him stop.">Send the seagull herald 🐦</button>
+  </div>
+  <div class="saybox" data-sayfor="g5b">…</div>
+  <button class="btn gated" id="g5b" disabled onclick="goTo('s5p3')">Turn the page ➡️</button>
+</div></section>
+
+<section class="page" id="s5p3"><div class="book">
+  <div class="chapter">STORY FIVE · PAGE 3 OF 5</div>
+  <span class="scene">🫖🖌️</span>
+  <div class="story">
+    Inside: a room that smelled of rain and jasmine tea.
+    <b>Tap around the studio:</b>
+  </div>
+  <div class="chips tapset" data-gate="g5c">
+    <button class="chip" data-say="A teacup, still warm. Whoever lived here had been awake recently — or dreams very productively.">🫖 the teacup</button>
+    <button class="chip" data-say="A paintbrush taller than Erin, its bristles soft as fog. She was NOT allowed to sword-fight with it. She asked twice.">🖌️ the giant brush</button>
+    <button class="chip" data-say="And one whole wall of little sketches — every single one of a small, brave ship with a marshmallow flag. Their ship. He'd been painting their skies for a long, long time.">🖼️ the sketch wall</button>
+  </div>
+  <div class="saybox" data-sayfor="g5c">…</div>
+  <button class="btn gated" id="g5c" disabled onclick="goTo('s5p4')">Turn the page ➡️</button>
+</div></section>
+
+<section class="page" id="s5p4"><div class="book">
+  <div class="chapter">STORY FIVE · PAGE 4 OF 5</div>
+  <div class="story">
+    And there, in a chair by the window, was the Cloud Painter himself — fast asleep,
+    a little cloud rising softly from his breath, already looking for its place in the sky.
+  </div>
+  <div class="portrait-frame">
+    <img src="Assets/08.jpg" alt="the Cloud Painter, asleep, dreaming up a cloud">
+    <div class="caption">The Cloud Painter — works strictly in his sleep.</div>
+  </div>
+  <div class="story">
+    <span class="whis">"Should we wake him?"</span> whispered Erin.
+    <br><span class="whis">"Never wake an artist mid-cloud,"</span> said <span class="cap">the Captain</span>.
+    <span class="whis">"Some people keep lighthouses. He keeps skies. We'll patch this one ourselves."</span>
+    <br><br>Erin picked up the smallest brush. It hummed happily in her hand.
+  </div>
+  <button class="btn" onclick="goTo('s5p5'); startPaint()">Borrow the brush 🖌️</button>
+</div></section>
+
+<section class="page" id="s5p5"><div class="book">
+  <div class="chapter">STORY FIVE · PAGE 5 OF 5 · PAINT THE CLOUD</div>
+  <div class="story">
+    <b>Draw with your finger to paint the missing cloud back into the sky!</b>
+    <span class="whis">Fill the gap — fluffy is encouraged. Fluffy is mandatory.</span>
+  </div>
+  <div class="score" id="paintScore">Sky patched: 0%</div>
+  <div id="paintwrap"><canvas id="paintCanvas"></canvas></div>
+  <div class="hint" id="paintHint">Paint inside the dashed cloud!</div>
+  <button class="btn gated" id="g5end" disabled onclick="finishStory(5)">The End — back to the shelf 📚</button>
+</div></section>
+
+<!-- ════════════════ STORY 6 · STAR POST OFFICE ════════════════ -->
+<section class="page" id="s6p1"><div class="book">
+  <div class="chapter">STORY SIX · PAGE 1 OF 5</div>
+  <span class="scene">🌠</span>
+  <div class="story">
+    THUNK. A shooting star landed right on the deck — and sat there, glowing politely.
+    <br><br>
+    On closer inspection it had a <b>stamp</b>, an <b>address</b>, and a slightly singed corner.
+    Shooting stars, it turns out, are the Cloud Sea's mail.
+    <br><br><b>Tap to unfold it:</b>
+  </div>
+  <div class="chips tapset" data-gate="g6a">
+    <button class="chip" data-say="TO: The Bravest Crew of Two, the good ship Marshmallow, Cloud Sea. FROM: A whale who remembers her song now. MESSAGE: 'Thank you. The pod says hi. We sing your names sometimes.' 🐋">💌 unfold the letter</button>
+  </div>
+  <div class="saybox" data-sayfor="g6a">…</div>
+  <button class="btn gated" id="g6a" disabled onclick="goTo('s6p2')">Turn the page ➡️</button>
+</div></section>
+
+<section class="page" id="s6p2"><div class="book">
+  <div class="chapter">STORY SIX · PAGE 2 OF 5</div>
+  <span class="scene">🦉📮</span>
+  <div class="story">
+    But the star-letter was three weeks late. Unacceptable! The crew sailed straight to the
+    <b>Star Post Office</b>, perched on the tallest cliff, and met Postmaster Hoot —
+    an owl wearing tiny spectacles and an expression of pure despair.
+    <br><br>
+    <span class="whis">"I sneezed,"</span> said Hoot, <span class="whis">"during a meteor shower.
+    Eleven thousand letters. Everywhere. EVERYWHERE."</span>
+  </div>
+  <div class="opts choiceset" data-gate="g6b">
+    <button class="opt" data-say="'We'll help,' said Ellen immediately — in the exact tone she uses when something is already decided.">Offer to help 🤝</button>
+    <button class="opt" data-say="'Was it a big sneeze?' asked Erin, fascinated. 'The BIGGEST,' said Hoot, with terrible pride.">Ask about the sneeze 🤧</button>
+    <button class="opt" data-say="Erin saluted the owl. The owl, deeply moved, saluted back with a wing. A bond was formed.">Salute the postmaster 🫡</button>
+  </div>
+  <div class="saybox" data-sayfor="g6b">…</div>
+  <button class="btn gated" id="g6b" disabled onclick="goTo('s6p3')">Turn the page ➡️</button>
+</div></section>
+
+<section class="page" id="s6p3"><div class="book">
+  <div class="chapter">STORY SIX · PAGE 3 OF 5</div>
+  <span class="scene">📬</span>
+  <div class="story">
+    Hoot explained the sacred sorting system, adjusting his spectacles:
+    <br><br>
+    🌙 <b>Moon mail</b> — lullabies, dreams, and apologies. Handle gently.<br>
+    ☀️ <b>Sun mail</b> — good mornings, compliments, and brave ideas.<br>
+    🪐 <b>Planet mail</b> — long letters from very far away. Mostly gossip.
+    <br><br><b>Tap a letter to practice:</b>
+  </div>
+  <div class="chips tapset" data-gate="g6c">
+    <button class="chip" data-say="A letter stamped 🌙 — 'one (1) lullaby, slightly used, still works.' To the moon bin it goes!">✉️🌙 practice letter</button>
+  </div>
+  <div class="saybox" data-sayfor="g6c">…</div>
+  <button class="btn gated" id="g6c" disabled onclick="goTo('s6p4')">Turn the page ➡️</button>
+</div></section>
+
+<section class="page" id="s6p4"><div class="book">
+  <div class="chapter">STORY SIX · PAGE 4 OF 5</div>
+  <span class="scene">👅⭐</span>
+  <div class="story">
+    Before sorting, every letter needs a fresh star-stamp — and star-stamps must be licked.
+    <em>Erin</em> volunteered with suspicious enthusiasm.
+    <br><br>
+    <span class="whis">"They're SHERBET flavored,"</span> she reported. <span class="whis">"This is the best job in the universe."</span>
+    <br><br><b>Which flavor is the best one, though?</b>
+  </div>
+  <div class="opts choiceset" data-gate="g6d">
+    <button class="opt" data-say="Lemon sherbet — the classic. Hoot nodded solemnly. 'A connoisseur.'">Lemon ⭐🍋</button>
+    <button class="opt" data-say="Berry sherbet — bold choice. Erin's tongue turned blue. Worth it.">Berry ⭐🫐</button>
+    <button class="opt" data-say="Rainbow sherbet — 'all flavors at once is technically the most efficient,' said Erin. Science again.">Rainbow ⭐🌈</button>
+  </div>
+  <div class="saybox" data-sayfor="g6d">…</div>
+  <button class="btn gated" id="g6d" disabled onclick="goTo('s6p5'); startMail()">To the sorting room ➡️</button>
+</div></section>
+
+<section class="page" id="s6p5"><div class="book">
+  <div class="chapter">STORY SIX · PAGE 5 OF 5 · SORT THE STAR MAIL</div>
+  <div class="story"><b>Look at each letter's stamp, then tap the right mailbox!</b> Hoot is watching. Hoot believes in you.</div>
+  <div class="score" id="mailScore">Sorted: 0 / 9</div>
+  <div class="letterview" id="mailLetter">✉️</div>
+  <div class="mailrow">
+    <button class="mailbox" data-box="moon">🌙<small>Moon mail</small></button>
+    <button class="mailbox" data-box="sun">☀️<small>Sun mail</small></button>
+    <button class="mailbox" data-box="planet">🪐<small>Planet mail</small></button>
+  </div>
+  <div class="hint" id="mailHint">Match the stamp on the letter to its mailbox!</div>
+  <button class="btn gated" id="g6end" disabled onclick="finishStory(6)">The End — back to the shelf 📚</button>
+</div></section>
+
+<!-- ════════════════ STORY 7 · REGATTA (CO-OP) ════════════════ -->
+<section class="page" id="s7p1"><div class="book">
+  <div class="chapter">STORY SEVEN · PAGE 1 OF 5</div>
+  <span class="scene">🏁🦚</span>
+  <div class="story">
+    A golden poster appeared in every port: <b>THE GREAT CLOUD SEA REGATTA — once a year,
+    winner takes the Cloud Cup.</b>
+    <br><br>
+    And the defending champion strolled by: <b>Admiral Pompous von Plume</b>, a peacock with
+    a yacht made of polished mahogany and self-esteem.
+    <br><br>
+    <span class="whis">"How charming,"</span> he said, examining the Marshmallow.
+    <span class="whis">"They're letting <i>family boats</i> enter now."</span>
+    <br><br>
+    Erin narrowed her eyes. The race was ON.
+  </div>
+  <button class="btn" onclick="goTo('s7p2')">Sign up 🖊️</button>
+</div></section>
+
+<section class="page" id="s7p2"><div class="book">
+  <div class="chapter">STORY SEVEN · PAGE 2 OF 5</div>
+  <span class="scene">🗺️⚡</span>
+  <div class="story">
+    Three routes to the finish line. Von Plume always takes the easy one — he doesn't like
+    wind in his feathers.
+    <br><br><b>Choose the Marshmallow's route, Captain:</b>
+  </div>
+  <div class="opts choiceset" data-gate="g7b">
+    <button class="opt" data-say="Thunder Alley — loud, bumpy, fast. 'Like the school run,' said Ellen calmly, 'but easier.'">⚡ Thunder Alley</button>
+    <button class="opt" data-say="The Glass Calm — so still you must row every meter yourself. Hard work. The Marshmallow's specialty.">🪞 The Glass Calm</button>
+    <button class="opt" data-say="Under Rainbow Falls — beautiful, soaking wet, and slightly faster if you sing while passing through. (House rule.)">🌈 Under Rainbow Falls</button>
+  </div>
+  <div class="saybox" data-sayfor="g7b">…</div>
+  <button class="btn gated" id="g7b" disabled onclick="goTo('s7p3')">Turn the page ➡️</button>
+</div></section>
+
+<section class="page" id="s7p3"><div class="book">
+  <div class="chapter">STORY SEVEN · PAGE 3 OF 5</div>
+  <span class="scene">🪶🪶🪶</span>
+  <div class="story">
+    Halfway through, the Marshmallow pulled ahead — and von Plume <i>panicked elegantly</i>.
+    He fluffed his tail and released his signature move: <b>the Feather Fog.</b>
+    <br><br><b>Quick — fan the feathers away! Tap each one:</b>
+  </div>
+  <div class="chips tapset" data-gate="g7c">
+    <button class="chip" data-say="Fwoosh! One down.">🪶</button>
+    <button class="chip" data-say="Fwoosh! Erin sneezed magnificently. Two down.">🪶</button>
+    <button class="chip" data-say="Fwoosh! The seagull ate one. He regrets nothing.">🪶</button>
+    <button class="chip" data-say="Fwoosh! Almost clear…">🪶</button>
+    <button class="chip" data-say="FWOOSH! Sky clear! And there — the finish line, dead ahead!">🪶</button>
+  </div>
+  <div class="saybox" data-sayfor="g7c">…</div>
+  <button class="btn gated" id="g7c" disabled onclick="goTo('s7p4')">Turn the page ➡️</button>
+</div></section>
+
+<section class="page" id="s7p4"><div class="book">
+  <div class="chapter">STORY SEVEN · PAGE 4 OF 5</div>
+  <span class="scene">🚣‍♀️🚣</span>
+  <div class="story">
+    The final stretch: the Glass Calm. No wind. No tricks. <b>Just rowing.</b>
+    <br><br>
+    Two oars. Two sailors. One screen.
+    <br><br>
+    <span class="cap">Captain</span> — you take the <b>gold oar (left)</b>.
+    <em>First Mate</em> — the <b>green oar (right)</b> is yours.
+    <br><br>
+    <b>Tap your own oar as fast as you can — but here's the secret: the boat only moves
+    as fast as the SLOWER oar. Row together or row in circles!</b>
+  </div>
+  <button class="btn" onclick="goTo('s7p5'); startRow()">Ready… ROW! 🚣</button>
+</div></section>
+
+<section class="page" id="s7p5"><div class="book">
+  <div class="chapter">STORY SEVEN · PAGE 5 OF 5 · ROW TOGETHER! (TWO PLAYERS!)</div>
+  <div class="racetrack">
+    <div class="lane">⛵ The Marshmallow</div>
+    <div class="lane-bar lane-us"><div class="lane-fill" id="laneUs">⛵</div></div>
+    <div class="lane">🦚 Von Plume's yacht</div>
+    <div class="lane-bar lane-rival"><div class="lane-fill" id="laneRival">🛥️</div></div>
+  </div>
+  <div class="rowarena">
+    <button class="oarbtn oar-cap" id="oarCap">CAPTAIN'S OAR 🚣‍♀️<br><span style="font-size:.8em" id="capCount">0 strokes</span></button>
+    <button class="oarbtn oar-mate" id="oarMate">FIRST MATE'S OAR 🚣<br><span style="font-size:.8em" id="mateCount">0 strokes</span></button>
+  </div>
+  <div class="hint" id="rowHint">Both tap at once — the boat follows the slower oar!</div>
+  <button class="btn gated" id="g7end" disabled onclick="finishStory(7)">🏆 To the Award Ceremony!</button>
+</div></section>
+
+<!-- ════════════════ CEREMONY ════════════════ -->
+<section class="page" id="ceremony"><div class="book">
+  <div class="chapter">THE CLOUD CUP · OFFICIAL HONORS</div>
+  <h1>The Award Ceremony 🏅</h1>
+  <div class="story" style="text-align:center;">
+    Von Plume demanded a recount. There was nothing to recount. 🦚📉<br>
+    The Cloud Cup — and everything else — goes to the crew of the <em>Marshmallow</em>:
+  </div>
+  <div class="medal">
+    <span class="m-ico">🏆</span>
+    <span>
+      <span class="m-title">Captain Ellen</span><br>
+      <span class="m-sub">Best Captain on the Cloud Sea — for out-sailing dragons, desserts, storms and one insufferable peacock, while making all of it look easy. (The stars checked. It isn't.)</span>
+    </span>
+  </div>
+  <div class="medal">
+    <span class="m-ico">⭐</span>
+    <span>
+      <span class="m-title">First Mate Erin</span><br>
+      <span class="m-sub">Bravest Sailor, Age Nine Division — dragon-optician, Chief Taste Officer, shell-singer, sky-painter, star-sorter, and officially the fun on board.</span>
+    </span>
+  </div>
+  <div class="medal">
+    <img class="m-ico" src="Assets/08.jpg" alt="the Cloud Painter">
+    <span>
+      <span class="m-title">Honorary Crew: The Cloud Painter</span><br>
+      <span class="m-sub">For keeping the skies over one particular ship especially well painted. He doesn't know he's been drafted — the First Mate signed for him. ☁️</span>
+    </span>
+  </div>
+  <div class="fineprint">
+    Commissioned by a friend across the sea, who hears the Captain deserves more easy days. 🌟<br>
+    Sequel: pending approval from the First Mate. 😄
+  </div>
+  <button class="btn" style="margin-top:12px" onclick="goTo('shelf')">Back to the bookshelf 📚</button>
+</div></section>
+
+<script>
+  /* ═══════════ infra ═══════════ */
+  (function () {
+    const wrap = document.getElementById('floaties');
+    const glyphs = ['⭐','✨','☁️','🌟','💫','☁️'];
+    for (let i = 0; i < 22; i++) {
+      const f = document.createElement('span');
+      f.className = 'floaty';
+      f.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+      f.style.left = Math.random() * 100 + 'vw';
+      f.style.fontSize = (14 + Math.random() * 22) + 'px';
+      f.style.animationDuration = (9 + Math.random() * 11) + 's';
+      f.style.animationDelay = (-Math.random() * 18) + 's';
+      wrap.appendChild(f);
+    }
+  })();
+
+  const S = { glasses: 'star-shaped glasses 🌟' };
+  let read = [];
+  try { read = JSON.parse(localStorage.getItem('cloudsea_read_v2') || '[]'); } catch (e) {}
+
+  function goTo(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const pg = document.getElementById(id);
+    pg.classList.add('active');
+    const bk = pg.querySelector('.book');
+    if (bk) bk.scrollTop = 0;
+  }
+
+  function burst(x, y, glyphs) {
+    for (let i = 0; i < 16; i++) {
+      const s = document.createElement('span');
+      s.className = 'burst';
+      s.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+      s.style.left = x + 'px'; s.style.top = y + 'px';
+      s.style.setProperty('--dx', (Math.random() - 0.5) * 340 + 'px');
+      s.style.setProperty('--dy', (Math.random() - 0.7) * 340 + 'px');
+      s.style.setProperty('--rot', (Math.random() - 0.5) * 220 + 'deg');
+      document.body.appendChild(s);
+      setTimeout(() => s.remove(), 1200);
+    }
+  }
+
+  function openStory(n) { goTo('s' + n + 'p1'); }
+
+  function renderShelf() {
+    document.querySelectorAll('.bk[data-bk]').forEach(b => {
+      b.classList.toggle('read', read.includes(+b.dataset.bk));
+    });
+    const all = read.length >= 7;
+    const cer = document.getElementById('bkCer');
+    cer.classList.toggle('locked', !all);
+    document.getElementById('cerTitle').textContent = all
+      ? 'The Award Ceremony — UNLOCKED! Tap to enter 🎉'
+      : 'The Award Ceremony — read all 7 stories to unlock 🔒 (' + read.length + '/7)';
+  }
+  function openCeremony() {
+    if (read.length < 7) return;
+    burst(innerWidth / 2, innerHeight / 2, ['🏅','🏆','⭐','🎉']);
+    goTo('ceremony');
+  }
+  function finishStory(n) {
+    if (!read.includes(n)) read.push(n);
+    try { localStorage.setItem('cloudsea_read_v2', JSON.stringify(read)); } catch (e) {}
+    renderShelf();
+    burst(innerWidth / 2, innerHeight / 2, ['📖','⭐','✨']);
+    if (n === 7 && read.length >= 7) { goTo('ceremony'); }
+    else goTo('shelf');
+  }
+  renderShelf();
+
+  /* generic tap-sets (tap all chips to unlock the gate) */
+  document.querySelectorAll('.tapset').forEach(set => {
+    const gate = document.getElementById(set.dataset.gate);
+    const say = document.querySelector('.saybox[data-sayfor="' + set.dataset.gate + '"]');
+    const chips = set.querySelectorAll('.chip');
+    let done = 0;
+    if (gate) {
+      gate.dataset.label = gate.textContent;
+      gate.textContent = chips.length === 1 ? 'Tap it first 👆' : 'Tap them all first 👆 (0/' + chips.length + ')';
+    }
+    chips.forEach(c => c.addEventListener('click', () => {
+      if (say) say.textContent = c.dataset.say;
+      if (!c.classList.contains('done')) {
+        c.classList.add('done');
+        done++;
+        if (gate) {
+          if (done >= chips.length) {
+            gate.disabled = false;
+            gate.textContent = gate.dataset.label;
+          } else {
+            gate.textContent = 'Tap them all first 👆 (' + done + '/' + chips.length + ')';
+          }
+        }
+      }
+    }));
+  });
+
+  /* generic choice-sets (pick one to unlock) */
+  document.querySelectorAll('.choiceset').forEach(set => {
+    const gate = document.getElementById(set.dataset.gate);
+    const say = document.querySelector('.saybox[data-sayfor="' + set.dataset.gate + '"]');
+    set.querySelectorAll('.opt').forEach(o => o.addEventListener('click', () => {
+      set.querySelectorAll('.opt').forEach(x => x.classList.remove('picked'));
+      o.classList.add('picked');
+      if (say) say.textContent = o.dataset.say;
+      if (o.dataset.set) { const [k, v] = o.dataset.set.split(':'); S[k] = v; }
+      if (gate) gate.disabled = false;
+    }));
+  });
+
+  /* ═══════════ STORY 1: toast game ═══════════ */
+  function prepS1p4() {
+    document.getElementById('s1p4text').innerHTML =
+      'Erin drew the ' + S.glasses + ' with her finest glitter pen, and the moment the dragon ' +
+      'put them on, the whole world clicked into focus.<br><br>' +
+      '<span class="whis">"Oh,"</span> he whispered. <span class="whis">"OH. Is that what clouds look like? ' +
+      'They\'re ADORABLE. I\'ve been TOASTING them."</span><br><br>' +
+      'He looked down at the crew — the first faces he\'d seen clearly in weeks — and his big eyes went shiny. ' +
+      'Dragons cry a little when someone is kind. It\'s in all the books.<br><br>' +
+      '<span class="cap">Captain Ellen</span> proposed a peace treaty, effective immediately, ' +
+      'to be signed the traditional way: <b>over s\'mores.</b>';
+    goTo('s1p4');
+  }
+
+  let toastTimer = null, toastVal = 0, toastPerfect = 0, toastHolding = false, toastT0 = 0;
+  function startToast() {
+    toastVal = 0; toastPerfect = 0;
+    document.getElementById('toastScore').textContent = 'Perfect marshmallows: 0 / 3';
+    document.getElementById('toastNeedle').style.width = '0%';
+    const btn = document.getElementById('toastBtn');
+    if (btn.dataset.wired) return;
+    btn.dataset.wired = '1';
+    const down = (e) => {
+      e.preventDefault();
+      if (toastPerfect >= 3 || toastHolding) return;
+      toastHolding = true; toastVal = 0;
+      toastT0 = performance.now();
+      document.getElementById('toastMallow').textContent = '🔥🍡';
+      toastTimer = setInterval(() => {
+        toastVal = Math.min(100, (performance.now() - toastT0) / 23);
+        document.getElementById('toastNeedle').style.width = toastVal + '%';
+        if (toastVal >= 100) release();
+      }, 50);
+    };
+    const release = () => {
+      if (!toastHolding) return;
+      toastHolding = false;
+      clearInterval(toastTimer);
+      toastVal = Math.min(100, (performance.now() - toastT0) / 23);
+      const hint = document.getElementById('toastHint');
+      if (toastVal >= 55 && toastVal <= 85) {
+        toastPerfect++;
+        document.getElementById('toastScore').textContent = 'Perfect marshmallows: ' + toastPerfect + ' / 3';
+        document.getElementById('toastMallow').textContent = '✨🍡✨';
+        hint.textContent = ['Golden! The dragon applauded with his eyebrows.', 'Perfect again! The treaty is looking delicious.', 'THREE! A historic dessert. And a historic peace.'][toastPerfect - 1];
+        burst(innerWidth / 2, innerHeight / 2, ['🍡','✨','🔥']);
+        if (toastPerfect >= 3) {
+          document.getElementById('g1end').disabled = false;
+          hint.textContent = 'Treaty signed. The dragon kept the heart— er, the glasses, forever. 🐉' ;
+        }
+      } else if (toastVal > 85) {
+        document.getElementById('toastMallow').textContent = '💀🍡';
+        hint.textContent = 'Charcoal. The seagull swooped in immediately. "MINE."';
+      } else {
+        document.getElementById('toastMallow').textContent = '❄️🍡';
+        hint.textContent = 'Still snow-white! Even the fire looked disappointed. Hold it longer!';
+      }
+      document.getElementById('toastNeedle').style.width = '0%';
+    };
+    btn.addEventListener('pointerdown', down);
+    btn.addEventListener('pointerup', release);
+    btn.addEventListener('pointerleave', release);
+  }
+
+  /* ═══════════ STORY 2: oath hold + catch sweets ═══════════ */
+  (function wireOath() {
+    const btn = document.getElementById('oathBtn');
+    const bar = btn.querySelector('.fillbar');
+    let t = null, v = 0;
+    const down = (e) => {
+      e.preventDefault();
+      const t0 = performance.now();
+      t = setInterval(() => {
+        v = Math.min(100, (performance.now() - t0) / 20);
+        bar.style.width = v + '%';
+        if (v >= 100) {
+          clearInterval(t);
+          document.getElementById('g2c').disabled = false;
+          document.getElementById('oathHint').textContent = 'Sworn in! 🎉 The island itself seemed to approve. A cupcake bush rustled with emotion.';
+          burst(innerWidth / 2, innerHeight / 2, ['🧁','📜','✋']);
+        }
+      }, 100);
+    };
+    const up = () => { clearInterval(t); if (v < 100) { v = 0; bar.style.width = '0%'; document.getElementById('oathHint').textContent = 'An oath can\'t be rushed OR abandoned. Hold it all the way!'; } };
+    btn.addEventListener('pointerdown', down);
+    btn.addEventListener('pointerup', up);
+    btn.addEventListener('pointerleave', up);
+  })();
+
+  let sweetTimer = null, sweetScore = 0, sweetsRunning = false;
+  function startSweets() {
+    if (sweetsRunning) return;
+    sweetsRunning = true;
+    sweetScore = 0;
+    const arena = document.getElementById('sweetArena');
+    const SWEETS = ['🍩','🧁','🍪','🍓','🍬','🍫'];
+    sweetTimer = setInterval(() => {
+      if (sweetScore >= 10) return;
+      const isBroc = Math.random() < 0.22;
+      const s = document.createElement('span');
+      s.className = 'sprite';
+      s.textContent = isBroc ? '🥦' : SWEETS[Math.floor(Math.random() * SWEETS.length)];
+      s.style.fontSize = '32px';
+      s.style.left = (5 + Math.random() * 85) + '%';
+      s.style.top = '-36px';
+      s.style.transition = 'top ' + (2.6 + Math.random() * 1.2) + 's linear';
+      s.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        if (s.classList.contains('pop')) return;
+        s.classList.add('pop');
+        const hint = document.getElementById('sweetHint');
+        if (isBroc) {
+          sweetScore = Math.max(0, sweetScore - 1);
+          hint.textContent = 'BROCCOLI! The Chief Taste Officer is filing a complaint. (-1) 🥦';
+        } else {
+          sweetScore++;
+          hint.textContent = ['Caught!', 'Nice catch!', 'The Captain approves!', 'Official deliciousness!'][Math.floor(Math.random() * 4)] + ' ' + s.textContent;
+        }
+        document.getElementById('sweetScore').textContent = 'Sweets caught: ' + Math.min(sweetScore, 10) + ' / 10';
+        setTimeout(() => s.remove(), 360);
+        if (sweetScore >= 10) {
+          clearInterval(sweetTimer);
+          arena.querySelectorAll('.sprite').forEach(x => x.remove());
+          document.getElementById('g2end').disabled = false;
+          hint.textContent = 'Survey complete! The crew left two pounds heavier and extremely happy. 🏝️';
+          burst(innerWidth / 2, innerHeight / 2, ['🍩','🧁','🍪','🎉']);
+        }
+      });
+      arena.appendChild(s);
+      requestAnimationFrame(() => requestAnimationFrame(() => { s.style.top = '105%'; }));
+      setTimeout(() => { if (!s.classList.contains('pop')) s.remove(); }, 4200);
+    }, 650);
+  }
+
+  /* ═══════════ STORY 3: whack-a-giggle ═══════════ */
+  let gigTimer = null, gigScore = 0, gigRunning = false;
+  function startGiggles() {
+    if (gigRunning) return;
+    gigRunning = true;
+    gigScore = 0;
+    const arena = document.getElementById('gigArena');
+    const GIGS = ['😂','🤭','😆','🤣'];
+    gigTimer = setInterval(() => {
+      if (gigScore >= 15) return;
+      const s = document.createElement('span');
+      s.className = 'sprite';
+      s.textContent = GIGS[Math.floor(Math.random() * GIGS.length)];
+      s.style.fontSize = '12px';
+      s.style.left = (8 + Math.random() * 78) + '%';
+      s.style.top = (8 + Math.random() * 72) + '%';
+      s.style.transition = 'font-size 1.3s ease-out';
+      s.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        if (s.classList.contains('pop')) return;
+        s.classList.add('pop');
+        gigScore++;
+        document.getElementById('gigScore').textContent = 'Giggles popped: ' + gigScore + ' / 15';
+        setTimeout(() => s.remove(), 300);
+        if (gigScore >= 15) {
+          clearInterval(gigTimer);
+          arena.querySelectorAll('.sprite').forEach(x => x.remove());
+          document.getElementById('g3end').disabled = false;
+          document.getElementById('gigHint').textContent = 'Silence. Then one last raindrop, chuckling quietly to itself. The storm surrendered out of respect. Erin rated the joke "so bad it\'s amazing" — 10/10. ⛅';
+          burst(innerWidth / 2, innerHeight / 2, ['⛅','🎉','😌']);
+        }
+      });
+      arena.appendChild(s);
+      requestAnimationFrame(() => requestAnimationFrame(() => { s.style.fontSize = '40px'; }));
+      setTimeout(() => { if (!s.classList.contains('pop')) s.remove(); }, 1700);
+    }, 520);
+  }
+
+  /* ═══════════ STORY 4: echo song (co-op simon) ═══════════ */
+  let echoPattern = [], echoInput = [], echoRound = 1, echoBusy = false, echoStarted = false;
+  const SHELL_GLYPHS = ['🐚','🌟','🫧','🌙'];
+  function startEcho() {
+    if (echoStarted) { return; }
+    echoStarted = true;
+    document.querySelectorAll('.shell').forEach(sh => {
+      sh.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        if (echoBusy || echoRound > 5) return;
+        const i = +sh.dataset.shell;
+        flashShell(i);
+        echoInput.push(i);
+        const upto = echoInput.length - 1;
+        if (echoPattern[upto] !== i) {
+          echoInput = [];
+          document.getElementById('echoHint').textContent = 'Almost! The whale hums it one more time — listen…';
+          setTimeout(() => playPattern(), 900);
+          return;
+        }
+        if (echoInput.length === echoPattern.length) {
+          echoInput = [];
+          if (echoRound >= 5) {
+            echoWin();
+          } else {
+            echoRound++;
+            document.getElementById('echoScore').textContent = 'Round ' + echoRound + ' of 5';
+            setTimeout(nextRound, 800);
+          }
+        }
+      });
+    });
+    echoPattern = [Math.floor(Math.random() * 4)];
+    setTimeout(playPattern, 800);
+  }
+  function nextRound() {
+    echoPattern.push(Math.floor(Math.random() * 4));
+    playPattern();
+  }
+  function setTurnBanner() {
+    const b = document.getElementById('echoTurn');
+    if (echoRound % 2 === 1) { b.className = 'turnbanner cap'; b.textContent = '👑 Round ' + echoRound + ' — CAPTAIN\'S turn to repeat it!'; }
+    else { b.className = 'turnbanner mate'; b.textContent = '⭐ Round ' + echoRound + ' — FIRST MATE\'S turn to repeat it!'; }
+  }
+  function flashShell(i) {
+    const sh = document.querySelector('.shell[data-shell="' + i + '"]');
+    sh.classList.add('flash');
+    setTimeout(() => sh.classList.remove('flash'), 380);
+  }
+  function playPattern() {
+    echoBusy = true;
+    document.getElementById('echoTurn').className = 'turnbanner cap';
+    document.getElementById('echoTurn').textContent = '🎵 The shells are singing — watch closely…';
+    echoPattern.forEach((p, idx) => setTimeout(() => flashShell(p), 600 * idx + 400));
+    setTimeout(() => {
+      echoBusy = false;
+      setTurnBanner();
+      document.getElementById('echoHint').textContent = 'Repeat the pattern! (' + echoPattern.length + ' note' + (echoPattern.length > 1 ? 's' : '') + ')';
+    }, 600 * echoPattern.length + 500);
+  }
+  function echoWin() {
+    document.getElementById('echoTurn').className = 'turnbanner cap';
+    document.getElementById('echoTurn').textContent = '🐋🎶 THE WHALE REMEMBERS HER SONG!';
+    document.getElementById('echoHint').textContent = 'She sang it once, shyly. Then louder. Then — from beyond the horizon — a hundred voices sang it back. Her pod had never stopped listening. The Marshmallow sailed home escorted by whale-song, which is the fanciest possible way to travel.';
+    document.getElementById('g4end').disabled = false;
+    burst(innerWidth / 2, innerHeight / 2, ['🐋','🎶','💙','✨']);
+  }
+
+  /* ═══════════ STORY 5: paint the cloud ═══════════ */
+  let paintStarted = false;
+  function startPaint() {
+    if (paintStarted) return;
+    paintStarted = true;
+    const cv = document.getElementById('paintCanvas');
+    const rect = () => cv.getBoundingClientRect();
+    cv.width = 600; cv.height = 380;
+    const ctx = cv.getContext('2d');
+    // sky
+    const g = ctx.createLinearGradient(0, 0, 0, 380);
+    g.addColorStop(0, '#7fa8e0'); g.addColorStop(1, '#b8d4f0');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, 600, 380);
+    // a couple of neighbor clouds
+    ctx.font = '40px serif';
+    ctx.fillText('☁️', 30, 70); ctx.fillText('☁️', 510, 320); ctx.fillText('🪿', 500, 70);
+    // the hole: dashed cloud outline (ellipse)
+    const EX = 300, EY = 190, RX = 200, RY = 110;
+    ctx.setLineDash([12, 10]);
+    ctx.strokeStyle = 'rgba(255,255,255,.85)';
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.ellipse(EX, EY, RX, RY, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+    // coverage grid: cells inside ellipse
+    const CELL = 30, inside = new Set(), painted = new Set();
+    for (let cx = 0; cx < 20; cx++) for (let cy = 0; cy < 13; cy++) {
+      const px = cx * CELL + CELL / 2, py = cy * CELL + CELL / 2;
+      if (((px - EX) ** 2) / (RX * RX) + ((py - EY) ** 2) / (RY * RY) <= 1) inside.add(cx + ',' + cy);
+    }
+    let drawing = false;
+    const draw = (e) => {
+      const r = rect();
+      const x = (e.clientX - r.left) * (600 / r.width);
+      const y = (e.clientY - r.top) * (380 / r.height);
+      ctx.fillStyle = 'rgba(255,255,255,.85)';
+      ctx.beginPath(); ctx.arc(x, y, 26, 0, Math.PI * 2); ctx.fill();
+      const key = Math.floor(x / CELL) + ',' + Math.floor(y / CELL);
+      if (inside.has(key) && !painted.has(key)) {
+        painted.add(key);
+        if (document.getElementById('g5end').dataset.done) return;
+        const pct = Math.min(100, Math.round(painted.size / inside.size * 100));
+        document.getElementById('paintScore').textContent = 'Sky patched: ' + pct + '%';
+        if (pct >= 85 && !document.getElementById('g5end').dataset.done) {
+          document.getElementById('g5end').dataset.done = '1';
+          document.getElementById('g5end').disabled = false;
+          document.getElementById('paintScore').textContent = 'Sky patched: 100% ✅';
+          document.getElementById('paintHint').textContent = 'Perfect. Fluffy, even. Back in the studio, the Cloud Painter smiled in his sleep — and the next morning, a brand-new sketch sat on his easel: a small brave ship, and two tiny figures painting the sky. ☁️';
+          burst(innerWidth / 2, innerHeight / 2, ['☁️','🖌️','✨']);
+        }
+      }
+    };
+    cv.addEventListener('pointerdown', (e) => { e.preventDefault(); drawing = true; try { cv.setPointerCapture(e.pointerId); } catch (err) {} draw(e); });
+    cv.addEventListener('pointermove', (e) => { if (drawing) { e.preventDefault(); draw(e); } });
+    cv.addEventListener('pointerup', () => { drawing = false; });
+    cv.addEventListener('pointercancel', () => { drawing = false; });
+  }
+
+  /* ═══════════ STORY 6: sort the mail ═══════════ */
+  const MAIL = [
+    { g: '✉️🌙', box: 'moon',   note: 'A lullaby for a sleepy volcano. Gently does it.' },
+    { g: '✉️☀️', box: 'sun',    note: '"Good morning, you magnificent walrus." Sun mail. Obviously.' },
+    { g: '✉️🪐', box: 'planet', note: 'Fourteen pages of gossip from Saturn. The rings are FEUDING.' },
+    { g: '✉️☀️', box: 'sun',    note: 'A brave idea, addressed to whoever needs one today.' },
+    { g: '✉️🌙', box: 'moon',   note: 'An apology from the tide. It knows what it did.' },
+    { g: '✉️🪐', box: 'planet', note: 'A very long letter that is 90% "anyway, as I was saying".' },
+    { g: '✉️🌙', box: 'moon',   note: 'A dream, slightly leaky. Handle with both wings, says Hoot.' },
+    { g: '✉️☀️', box: 'sun',    note: 'A compliment so good the envelope is blushing.' },
+    { g: '✉️🪐', box: 'planet', note: 'The last one! Gossip from Neptune. (It\'s about Saturn.)' },
+  ];
+  let mailIdx = 0, mailStarted = false;
+  function startMail() {
+    if (mailStarted) return;
+    mailStarted = true;
+    mailIdx = 0;
+    showLetter();
+    document.querySelectorAll('.mailbox').forEach(mb => {
+      mb.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        if (mailIdx >= MAIL.length) return;
+        const cur = MAIL[mailIdx];
+        const hint = document.getElementById('mailHint');
+        if (mb.dataset.box === cur.box) {
+          hint.textContent = '✅ ' + cur.note;
+          mailIdx++;
+          document.getElementById('mailScore').textContent = 'Sorted: ' + mailIdx + ' / 9';
+          if (mailIdx >= MAIL.length) {
+            document.getElementById('mailLetter').textContent = '🎉';
+            document.getElementById('g6end').disabled = false;
+            hint.textContent = 'Backlog: CLEARED. Hoot wept into a tiny handkerchief, then issued the crew their own star-stamp — "so your letters always fly first class." 🦉⭐';
+            burst(innerWidth / 2, innerHeight / 2, ['💌','⭐','🦉']);
+          } else showLetter();
+        } else {
+          hint.textContent = 'Hoot, gently: "Hoo. Hoo, no. Check the stamp, sailor." 🦉';
+        }
+      });
+    });
+  }
+  function showLetter() { document.getElementById('mailLetter').textContent = MAIL[mailIdx].g; }
+
+  /* ═══════════ STORY 7: row together (co-op) ═══════════ */
+  let rowStarted = false;
+  function startRow() {
+    if (rowStarted) return;
+    rowStarted = true;
+    let cap = 0, mate = 0, rival = 0, over = false;
+    const NEED = 30;
+    const upd = () => {
+      const us = Math.min(cap, mate);
+      document.getElementById('laneUs').style.width = Math.min(100, us / NEED * 100) + '%';
+      document.getElementById('laneRival').style.width = Math.min(100, rival / NEED * 100) + '%';
+      document.getElementById('capCount').textContent = cap + ' strokes';
+      document.getElementById('mateCount').textContent = mate + ' strokes';
+      const hint = document.getElementById('rowHint');
+      if (over) return;
+      if (cap - mate > 5) hint.textContent = 'The First Mate\'s oar is falling behind — the boat is turning in circles! 🌀';
+      else if (mate - cap > 5) hint.textContent = 'The Captain\'s oar is falling behind — row, Captain, ROW! 🌀';
+      else if (us > rival) hint.textContent = 'The Marshmallow takes the lead! 🔥';
+      else hint.textContent = 'Stroke! Stroke! Together! 🚣';
+      if (us >= NEED) {
+        over = true;
+        clearInterval(rivalTimer);
+        document.getElementById('rowHint').textContent = '🏁 THE MARSHMALLOW WINS! Von Plume crossed the line second, claimed he "wasn\'t really trying", and molted slightly with rage. The crowd went WILD.';
+        document.getElementById('g7end').disabled = false;
+        burst(innerWidth / 2, innerHeight / 2, ['🏆','🎉','⛵','⭐']);
+      }
+    };
+    document.getElementById('oarCap').addEventListener('pointerdown', (e) => { e.preventDefault(); if (!over) { cap++; upd(); } });
+    document.getElementById('oarMate').addEventListener('pointerdown', (e) => { e.preventDefault(); if (!over) { mate++; upd(); } });
+    const rivalTimer = setInterval(() => {
+      if (over) return;
+      const us = Math.min(cap, mate);
+      // von Plume slows down to admire his reflection whenever he leads
+      rival += (rival > us + 3) ? 0 : 1;
+      if (rival >= NEED) rival = NEED - 1; // he ALWAYS fumbles the finish. tragic. hilarious.
+      upd();
+    }, 1100);
+  }
+</script>
+</body>
+</html>
